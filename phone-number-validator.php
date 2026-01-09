@@ -25,12 +25,11 @@ function pnv_enqueue_checkout_js() {
         $allowed_prefixes = array_values(array_filter(array_map('trim', explode(',', get_option('pnv_allowed_prefixes', '')))));
         $raw_prefix = isset($allowed_prefixes[0]) ? $allowed_prefixes[0] : '';
 
-        $expected_len_digits = intval(get_option('pnv_phone_length', '9')); // total digits incl. prefix, no '+'
-        $ui_prefix = $raw_prefix ? '+' . $raw_prefix : ''; // show '+' before the visible prefix
+        $expected_len_digits = intval(get_option('pnv_phone_length', '10')); // total digits incl. prefix
+        $ui_prefix = $raw_prefix ? $raw_prefix : ''; // no '+' sign for Romanian format
 
         wp_localize_script('pnv-phone-validator', 'pnv_data', array(
-            // Account for the extra '+' character in the UI
-            'maxLength' => $expected_len_digits + ($ui_prefix ? 1 : 0),
+            'maxLength' => $expected_len_digits,
             'prefix'    => $ui_prefix
         ));
     }
@@ -113,46 +112,42 @@ function pnv_validate_phone_number() {
 
         $is_valid = false;
         foreach ($allowed_prefixes_digits as $prefix) {
-            if ($prefix === '370' && strpos($digits, $prefix) === 0 && strlen($digits) === $expected_length) {
-                // LITHUANIAN-SPECIFIC VALIDATION
-                // Extract digit after 370 prefix
-                $first_digit_after_prefix = substr($digits, 3, 1);
-
-                if ($first_digit_after_prefix === '6') {
-                    // Valid Lithuanian mobile number
+            if ($prefix !== '' && strpos($digits, $prefix) === 0 && strlen($digits) === $expected_length) {
+                // Romanian validation: check if starts with 07 and has correct length
+                if ($prefix === '07' && strlen($digits) === 10) {
                     $is_valid = true;
                     break;
-                } else {
-                    // Invalid: doesn't start with 6 after 370
-                    wc_add_notice(
-                        __('Lietuvos mobiliojo telefono numeris turi prasidėti +3706. Patikrinkite savo numerį.', 'phone-validator'),
-                        'error'
-                    );
-                    return;
+                } elseif ($prefix !== '07' && strpos($digits, $prefix) === 0 && strlen($digits) === $expected_length) {
+                    // Other prefixes (future-proofing for other countries)
+                    $is_valid = true;
+                    break;
                 }
-            } elseif ($prefix !== '' && strpos($digits, $prefix) === 0 && strlen($digits) === $expected_length) {
-                // Other prefixes (future-proofing for other countries)
-                $is_valid = true;
-                break;
             }
         }
 
         if (!$is_valid) {
-            wc_add_notice(
-                __('Įveskite galiojantį Lietuvos mobiliojo telefono numerį formatu +3706XXXXXXX', 'phone-validator'),
-                'error'
-            );
+            if (strpos($digits, '07') === 0 && strlen($digits) !== 10) {
+                wc_add_notice(
+                    __('Numărul de telefon mobil românesc trebuie să înceapă cu 07. Verificați numărul dvs.', 'phone-validator'),
+                    'error'
+                );
+            } else {
+                wc_add_notice(
+                    __('Introduceți un număr de telefon mobil românesc valid în formatul 07XXXXXXXX', 'phone-validator'),
+                    'error'
+                );
+            }
         }
     }
 }
 
 add_filter('woocommerce_checkout_fields', 'pnv_add_maxlength_to_phone_field');
 function pnv_add_maxlength_to_phone_field($fields) {
-    $expected_len_digits = intval(get_option('pnv_phone_length', '9')); // digits only
+    $expected_len_digits = intval(get_option('pnv_phone_length', '10')); // digits only
     $allowed_prefixes = array_values(array_filter(array_map('trim', explode(',', get_option('pnv_allowed_prefixes', '')))));
     $has_prefix = !empty($allowed_prefixes);
-    // +1 char for the '+' we display
-    $fields['billing']['billing_phone']['maxlength'] = $expected_len_digits + ($has_prefix ? 1 : 0);
+    // No extra char needed for Romanian format (no '+' sign)
+    $fields['billing']['billing_phone']['maxlength'] = $expected_len_digits;
     $fields['billing']['billing_phone']['inputmode'] = 'tel';
     return $fields;
 }
