@@ -1,0 +1,97 @@
+/* Phone Number Validator Styles */
+
+.phone-input-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.country-flag {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: auto;
+    max-height: 24px;
+    pointer-events: none;
+    user-select: none;
+    z-index: 1;
+    border-radius: 2px; /* Slight rounding for modern look */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+.phone-input-wrapper.has-icon.has-invalid img.country-flag {
+    transform: translateY(-120%);
+
+}
+
+/* Add padding to inputs to make room for flag */
+.phone-input-wrapper #billing_phone,
+.phone-input-wrapper #shipping_phone {
+    padding-left: 45px !important;
+}
+
+/* Valid state */
+.phone-input-wrapper #billing_phone.valid,
+.phone-input-wrapper #shipping_phone.valid {
+    border-color: #46b450 !important;
+    border-width: 2px !important;
+    box-shadow: 0 0 0 1px rgba(70, 180, 80, 0.1);
+}
+
+/* Invalid state */
+.phone-input-wrapper #billing_phone.invalid,
+.phone-input-wrapper #shipping_phone.invalid {
+    border-color: #dc3232 !important;
+    border-width: 2px !important;
+    box-shadow: 0 0 0 1px rgba(220, 50, 50, 0.1);
+}
+
+/* Error message styling */
+.phone-error {
+    display: none;
+    color: #dc3232;
+    font-size: 0.875em;
+    margin-top: 4px;
+    padding: 4px 8px;
+    background: #fef2f2;
+    border-radius: 3px;
+    border-left: 3px solid #dc3232;
+}
+
+/* Validation icon positioning */
+.phone-input-wrapper.has-icon::after {
+    content: '';
+    position: absolute;
+    right: 12px;
+    top: 0;
+    display: flex;
+    align-items: center;
+    height: var(--input-height, 48px); /* Dynamic height, fallback to 48px */
+    font-size: 20px;
+    font-weight: bold;
+    line-height: 1;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+/* Valid checkmark icon */
+.phone-input-wrapper.has-valid::after {
+    content: '✓';
+    color: #46b450;
+    opacity: 1;
+}
+
+/* Invalid X icon */
+.phone-input-wrapper.has-invalid::after {
+    content: '✗';
+    color: #dc3232;
+    opacity: 1;
+}
+
+/* Smooth transitions for border changes */
+.phone-input-wrapper #billing_phone,
+.phone-input-wrapper #shipping_phone {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}

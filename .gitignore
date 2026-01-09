@@ -1,0 +1,39 @@
+# JetBrains / PhpStorm
+.idea/
+.vscode/
+.cursor/
+.zip/
+.claude
+
+# Composer
+vendor/
+
+# WordPress dev dependencies
+wp-content/
+
+# Dev config files
+*.dist
+
+# PHPStan cache
+.phpstan-cache/
+
+# Dependencies
+/node_modules/
+
+# Build artifacts
+*.log
+*.map
+*.min.css
+*.min.js
+/build/
+/dist/
+
+# IDE and OS generated files
+.DS_Store
+Thumbs.db
+*.sublime-*
+*.bak
+*.swp
+.env
+.env.local
+.phpunit.result.cache
