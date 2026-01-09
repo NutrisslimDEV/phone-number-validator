@@ -2,8 +2,8 @@ document.addEventListener('DOMContentLoaded', function() {
     var phoneInput = document.querySelector('input[name="billing_phone"]');
     if (!phoneInput || typeof pnv_data === 'undefined') return;
 
-    var prefix = pnv_data.prefix || ''; // e.g. "+370"
-    var maxLength = parseInt(pnv_data.maxLength, 10) || 0; // includes '+' char when present
+    var prefix = pnv_data.prefix || ''; // e.g. "07"
+    var maxLength = parseInt(pnv_data.maxLength, 10) || 0;
 
     // Wrap input with flag
     wrapInputWithFlag(phoneInput);
@@ -25,23 +25,11 @@ document.addEventListener('DOMContentLoaded', function() {
     phoneInput.addEventListener('input', function(e) {
         var value = this.value;
 
-        // Auto-correct Lithuanian mobile pattern: +37086 → +3706
-        value = autoCorrectLithuanianMobile(value);
-
-        // Update value if changed by auto-correction
-        if (value !== this.value) {
-            var cursorPos = this.selectionStart;
-            this.value = value;
-            // Adjust cursor position (one character back if we removed the 8)
-            this.setSelectionRange(cursorPos - 1, cursorPos - 1);
-        }
-
         // Restore prefix if removed by paste or drag
         if (prefix && !this.value.startsWith(prefix)) {
             var cleaned = this.value.replace(/^\+?/, '');
-            var rawPrefix = prefix.replace('+', '');
-            if (cleaned.startsWith(rawPrefix)) {
-                this.value = '+' + cleaned;
+            if (cleaned.startsWith(prefix)) {
+                this.value = cleaned;
             } else {
                 this.value = prefix + cleaned;
             }
@@ -94,10 +82,10 @@ function wrapInputWithFlag(input) {
     // Create flag image
     var flag = document.createElement('img');
     flag.className = 'country-flag';
-    flag.setAttribute('src', 'https://flagcdn.com/24x18/lt.png'); // Lithuanian flag from CDN
-    flag.setAttribute('srcset', 'https://flagcdn.com/48x36/lt.png 2x'); // Retina display support
-    flag.setAttribute('alt', 'Lithuania');
-    flag.setAttribute('aria-label', 'Lithuania');
+    flag.setAttribute('src', 'https://flagcdn.com/24x18/ro.png'); // Romanian flag from CDN
+    flag.setAttribute('srcset', 'https://flagcdn.com/48x36/ro.png 2x'); // Retina display support
+    flag.setAttribute('alt', 'România');
+    flag.setAttribute('aria-label', 'România');
 
     // Insert wrapper before input
     input.parentNode.insertBefore(wrapper, input);
@@ -124,31 +112,13 @@ function setValidationIconHeight(input) {
 }
 
 /**
- * Auto-corrects Lithuanian mobile number pattern
- * Converts +37086XXXXXX to +3706XXXXXX
- */
-function autoCorrectLithuanianMobile(value) {
-    if (value.startsWith('+370')) {
-        var afterPrefix = value.substring(4); // everything after "+370"
-
-        // Pattern 1: User typed "86" → auto-correct to "6"
-        if (afterPrefix.match(/^8\s*6/)) {
-            afterPrefix = afterPrefix.replace(/^8\s*/, '');
-            return '+370' + afterPrefix;
-        }
-    }
-
-    return value; // no correction needed
-}
-
-/**
  * Validates the phone number format
  * @param {HTMLInputElement} input - The phone input element
  * @param {boolean} showErrors - Whether to display error messages
  */
 function validatePhoneNumber(input, showErrors) {
-    // Lithuanian mobile pattern: +370 followed by 6 and 7 more digits
-    var pattern = /^\+370[6]\d{7}$/;
+    // Romanian mobile pattern: 07 followed by 8 more digits
+    var pattern = /^07\d{8}$/;
     var value = input.value.replace(/\s/g, ''); // Remove spaces for validation
     var wrapper = input.parentNode;
 
@@ -160,7 +130,7 @@ function validatePhoneNumber(input, showErrors) {
         wrapper.classList.add('has-valid', 'has-icon');
         hideError(input);
         return true;
-    } else if (showErrors && value.length >= 12) {
+    } else if (showErrors && value.length >= 10) {
         // Invalid number (only show errors on blur and if user has typed enough)
         input.classList.remove('valid');
         input.classList.add('invalid');
@@ -169,15 +139,10 @@ function validatePhoneNumber(input, showErrors) {
 
         // Determine specific error message
         var errorMsg;
-        if (value.startsWith('+370') && value.length >= 5) {
-            var firstDigitAfterPrefix = value.charAt(4);
-            if (firstDigitAfterPrefix && firstDigitAfterPrefix !== '6') {
-                errorMsg = 'Lietuvos mobiliojo telefono numeris turi prasidėti +3706';
-            } else {
-                errorMsg = 'Netinkamas telefono numerio formatas';
-            }
+        if (value.startsWith('07') && value.length >= 3) {
+            errorMsg = 'Format de număr de telefon invalid';
         } else {
-            errorMsg = 'Įveskite galiojantį Lietuvos mobiliojo telefono numerį formatu +3706XXXXXXX';
+            errorMsg = 'Introduceți un număr de telefon mobil românesc valid în formatul 07XXXXXXXX';
         }
 
         showError(input, errorMsg);
